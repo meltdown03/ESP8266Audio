@@ -47,11 +47,13 @@ AudioOutputI2S::AudioOutputI2S(int port, int output_mode, int dma_buf_count, int
     }
 
     i2s_mode_t mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
+#if !defined(ARDUINO_ESP32S2_DEV)
     if (output_mode == INTERNAL_DAC) {
       mode = (i2s_mode_t)(mode | I2S_MODE_DAC_BUILT_IN);
     } else if (output_mode == INTERNAL_PDM) {
       mode = (i2s_mode_t)(mode | I2S_MODE_PDM);
     }
+#endif
 
     i2s_comm_format_t comm_fmt = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
     if (output_mode == INTERNAL_DAC) {
@@ -191,7 +193,7 @@ bool AudioOutputI2S::ConsumeSample(int16_t sample[2])
   } else {
     s32 = ((Amplify(ms[RIGHTCHANNEL]))<<16) | (Amplify(ms[LEFTCHANNEL]) & 0xffff);
   }
-  return i2s_write_bytes((i2s_port_t)portNo, (const char*)&s32, sizeof(uint32_t), 0);
+  return i2s_write((i2s_port_t)portNo, (const char*)&s32, sizeof(uint32_t), &bytesWritten, 0);
 #else
   uint32_t s32 = ((Amplify(ms[RIGHTCHANNEL]))<<16) | (Amplify(ms[LEFTCHANNEL]) & 0xffff);
   return i2s_write_sample_nb(s32); // If we can't store it, return false.  OTW true

@@ -40,6 +40,8 @@ class AudioOutputI2SNoDAC : public AudioOutputI2S
     enum {fixedPosValue=0x007fff00}; /* 24.8 of max-signed-int */
     fixed24p8_t lastSamp; // Last sample value
     fixed24p8_t cumErr;   // Running cumulative error since time began
+  private:
+    size_t bytesWritten=0;
 };
 
 #endif
