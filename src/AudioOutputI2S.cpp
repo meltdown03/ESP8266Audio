@@ -67,8 +67,10 @@ AudioOutputI2S::AudioOutputI2S(int port, int output_mode, int dma_buf_count, int
       .communication_format = comm_fmt,
       .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1, // lowest interrupt priority
       .dma_buf_count = dma_buf_count,
-      .dma_buf_len = 64,
-      .use_apll = use_apll // Use audio PLL
+      .dma_buf_len = 256,
+      .use_apll = use_apll, // Use audio PLL
+      .tx_desc_auto_clear= true,  // new in V1.0.1
+      .fixed_mclk=-1
     };
     audioLogger->printf("+%d %p\n", portNo, &i2s_config_dac);
     if (i2s_driver_install((i2s_port_t)portNo, &i2s_config_dac, 0, NULL) != ESP_OK) {
@@ -194,7 +196,7 @@ bool AudioOutputI2S::ConsumeSample(int16_t sample[2])
   } else {
     s32 = ((Amplify(ms[RIGHTCHANNEL]))<<16) | (Amplify(ms[LEFTCHANNEL]) & 0xffff);
   }
-  esp_err_t err=i2s_write((i2s_port_t)portNo, (const char*)&s32, sizeof(uint32_t), &bytesWritten, 100);
+  esp_err_t err=i2s_write((i2s_port_t)portNo, (const char*)&s32, sizeof(uint32_t), &bytesWritten, portMAX_DELAY);
   if(err!=ESP_OK){
       log_e("ESP32 Errorcode %i", err);
       return false;
