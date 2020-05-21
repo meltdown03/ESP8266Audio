@@ -47,18 +47,17 @@ AudioOutputI2S::AudioOutputI2S(int port, int output_mode, int dma_buf_count, int
     }
 
     i2s_mode_t mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
+    i2s_comm_format_t comm_fmt = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
 #if !defined(ARDUINO_ESP32S2_DEV)
     if (output_mode == INTERNAL_DAC) {
       mode = (i2s_mode_t)(mode | I2S_MODE_DAC_BUILT_IN);
     } else if (output_mode == INTERNAL_PDM) {
       mode = (i2s_mode_t)(mode | I2S_MODE_PDM);
     }
-#endif
-
-    i2s_comm_format_t comm_fmt = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
     if (output_mode == INTERNAL_DAC) {
       comm_fmt = (i2s_comm_format_t)I2S_COMM_FORMAT_I2S_MSB;
     }
+#endif
 
     i2s_config_t i2s_config_dac = {
       .mode = mode,
@@ -77,7 +76,9 @@ AudioOutputI2S::AudioOutputI2S(int port, int output_mode, int dma_buf_count, int
     }
     if (output_mode == INTERNAL_DAC || output_mode == INTERNAL_PDM) {
       i2s_set_pin((i2s_port_t)portNo, NULL);
+#if !defined(ARDUINO_ESP32S2_DEV)
       i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN);
+#endif
     } else {
       SetPinout(26, 25, 22);
     }
