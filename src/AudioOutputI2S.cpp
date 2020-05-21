@@ -194,7 +194,17 @@ bool AudioOutputI2S::ConsumeSample(int16_t sample[2])
   } else {
     s32 = ((Amplify(ms[RIGHTCHANNEL]))<<16) | (Amplify(ms[LEFTCHANNEL]) & 0xffff);
   }
-  return i2s_write((i2s_port_t)portNo, (const char*)&s32, sizeof(uint32_t), &bytesWritten, 0);
+  esp_err_t err=i2s_write((i2s_port_t)portNo, (const char*)&s32, sizeof(uint32_t), &bytesWritten, 100);
+  if(err!=ESP_OK){
+      log_e("ESP32 Errorcode %i", err);
+      return false;
+  }
+  if(bytesWritten<4){
+      log_e("Can't stuff any more in I2S..."); // increase waitingtime or outputbuffer
+      return false;
+  }
+  return true;
+  // return i2s_write((i2s_port_t)portNo, (const char*)&s32, sizeof(uint32_t), &bytesWritten, 100);
 #else
   uint32_t s32 = ((Amplify(ms[RIGHTCHANNEL]))<<16) | (Amplify(ms[LEFTCHANNEL]) & 0xffff);
   return i2s_write_sample_nb(s32); // If we can't store it, return false.  OTW true
