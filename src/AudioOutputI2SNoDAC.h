@@ -41,7 +41,7 @@ class AudioOutputI2SNoDAC : public AudioOutputI2S
     fixed24p8_t lastSamp; // Last sample value
     fixed24p8_t cumErr;   // Running cumulative error since time began
   private:
-    size_t bytesWritten=0;
+    size_t bytesWritten = 0;
 };
 
 #endif
